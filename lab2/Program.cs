@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.IO;
+using System.Data.SqlTypes;
 
 
 class Program
@@ -32,7 +33,7 @@ class Program
     static void EncryptData()  //Зашифрування
     {
         //Визаначення паролю для шифрування 
-        string password = "!strongpassword1253"; // Пароль
+        string password = GetSecurePassword(); // Безпечний ввід пароля
         byte[] salt = new byte[16];
         byte[] iv = new byte[16]; // 128 біт для AES
 
@@ -83,7 +84,8 @@ class Program
         Console.WriteLine("Введіть назву файлу (не вказувати формат)");
 
         // Збереження всіх компонентів у файл
-        using (var fileStream = new FileStream(Console.ReadLine()+".bin", FileMode.Create))
+        Console.InputEncoding = Encoding.UTF8;
+        using (var fileStream = new FileStream(Console.ReadLine() + ".bin", FileMode.Create))
         {
             fileStream.Write(salt, 0, salt.Length);  // Запис salt
             fileStream.Write(iv, 0, iv.Length); // Запис IV
@@ -97,6 +99,7 @@ class Program
     static void DecryptData()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.InputEncoding = Encoding.UTF8;
         Console.WriteLine("Введіть назву файлу (не вказувати формат)");
 
         // Читання зашифрованого файлу
@@ -115,7 +118,7 @@ class Program
         Array.Copy(fileContent, salt.Length + iv.Length + mac.Length, encryptedData, 0, encryptedData.Length); // Вилучення зашифрованих даних
 
         // Визначення пароля для розшифрування
-        string password = "!strongpassword1253"; // Пароль, який має співпадати з паролем зашифрування
+        string password = GetSecurePassword(); // Пароль, який має співпадати з паролем зашифрування
         int iterations = 100000;
         int keyLength = 32;
         byte[] key;
@@ -155,6 +158,33 @@ class Program
         byte[] decryptedData = RemovePadding(decryptedPaddedData);
         string decryptedText = Encoding.UTF8.GetString(decryptedData); // Перетворення байтів у текст
         Console.WriteLine("Розшифровані дані: " + decryptedText);
+    }
+
+    //Метод для введення безпечного пароля
+    static string GetSecurePassword()
+    {
+        Console.InputEncoding = Encoding.UTF8;
+        Console.WriteLine("Введіть пароль:");
+        StringBuilder password = new StringBuilder();
+        ConsoleKeyInfo key;
+
+        do
+        {
+            key = Console.ReadKey(true);
+            if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+            {
+                password.Length--;
+                Console.Write("\b \b");
+            }
+            else if (!char.IsControl(key.KeyChar))
+            {
+                password.Append(key.KeyChar);
+                Console.Write("*");
+            }
+        } while (key.Key != ConsoleKey.Enter);
+
+        Console.WriteLine();
+        return password.ToString();
     }
 
     // Метод для доповнення даних (PKCS7)
