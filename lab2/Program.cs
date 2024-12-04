@@ -85,7 +85,27 @@ class Program
 
         // Збереження всіх компонентів у файл
         Console.InputEncoding = Encoding.UTF8;
-        using (var fileStream = new FileStream(Console.ReadLine() + ".bin", FileMode.Create))
+        string fileName;
+        while (true)
+        {
+            Console.InputEncoding = Encoding.UTF8;
+            fileName = Console.ReadLine()?.Trim();
+
+            // Перевірка на порожній або некоректний ввід
+            if (string.IsNullOrEmpty(fileName))
+            {
+                Console.WriteLine("Назва файлу не може бути порожньою. Будь ласка, введіть коректну назву.");
+            }
+            else if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                Console.WriteLine("Назва файлу містить недопустимі символи. Спробуйте ще раз.");
+            }
+            else
+            {
+                break; // Умова виконана, вихід із циклу
+            }
+        }
+        using (var fileStream = new FileStream(fileName + ".bin", FileMode.Create))
         {
             fileStream.Write(salt, 0, salt.Length);  // Запис salt
             fileStream.Write(iv, 0, iv.Length); // Запис IV
@@ -102,8 +122,36 @@ class Program
         Console.InputEncoding = Encoding.UTF8;
         Console.WriteLine("Введіть назву файлу (не вказувати формат)");
 
+        string fileName;
+        while (true)
+        {
+            Console.InputEncoding = Encoding.UTF8;
+            fileName = Console.ReadLine()?.Trim();
+
+            // Перевірка на порожній або некоректний ввід
+            if (string.IsNullOrEmpty(fileName))
+            {
+                Console.WriteLine("Назва файлу не може бути порожньою. Будь ласка, введіть коректну назву.");
+            }
+            else if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                Console.WriteLine("Назва файлу містить недопустимі символи. Спробуйте ще раз.");
+            }
+            else
+            {
+                string fullPath = fileName + ".bin";
+                if (!File.Exists(fullPath))
+                {
+                    Console.WriteLine($"Файл {fullPath} не знайдено. Будь ласка, введіть існуючий файл.");
+                }
+                else
+                {
+                    break; // Умова виконана, вихід із циклу
+                }
+            }
+        }
         // Читання зашифрованого файлу
-        byte[] fileContent = File.ReadAllBytes(Console.ReadLine() + ".bin");
+        byte[] fileContent = File.ReadAllBytes(fileName + ".bin");
 
 
         // Розділення вмісту файлу на salt, iv, mac та зашифровані дані
@@ -184,6 +232,14 @@ class Program
         } while (key.Key != ConsoleKey.Enter);
 
         Console.WriteLine();
+
+        // Перевірка на порожній рядок
+        if (password.Length == 0)
+        {
+            Console.WriteLine("Пароль не може бути порожнім. Програма завершена.");
+            Environment.Exit(0); // Завершення роботи програми
+        }
+
         return password.ToString();
     }
 
