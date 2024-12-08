@@ -209,35 +209,44 @@ class Program
     static string GetSecurePassword()
     {
         Console.InputEncoding = Encoding.UTF8;
-        Console.WriteLine("Введіть пароль:");
-        StringBuilder password = new StringBuilder();
-        ConsoleKeyInfo key;
 
-        do
+        while (true) // Додаємо цикл для повторного введення паролю
         {
-            key = Console.ReadKey(true);
-            if (key.Key == ConsoleKey.Backspace && password.Length > 0)
-            {
-                password.Length--;
-                Console.Write("\b \b");
-            }
-            else if (!char.IsControl(key.KeyChar))
-            {
-                password.Append(key.KeyChar);
-                Console.Write("*");
-            }
-        } while (key.Key != ConsoleKey.Enter);
+            Console.WriteLine("Введіть пароль (не менше 8 символів):");
+            StringBuilder password = new StringBuilder();
+            ConsoleKeyInfo key;
 
-        Console.WriteLine();
+            do
+            {
+                key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+                {
+                    password.Length--;
+                    Console.Write("\b \b");
+                }
+                else if (!char.IsControl(key.KeyChar))
+                {
+                    password.Append(key.KeyChar);
+                    Console.Write("*");
+                }
+            } while (key.Key != ConsoleKey.Enter);
 
-        // Перевірка на порожній рядок
-        if (password.Length == 0)
-        {
-            Console.WriteLine("Пароль не може бути порожнім. Програма завершена.");
-            Environment.Exit(0); // Завершення роботи програми
+            Console.WriteLine();
+
+            // Перевірка на порожній пароль або довжину менше 8 символів
+            if (password.Length == 0)
+            {
+                Console.WriteLine("Пароль не може бути порожнім.");
+            }
+            else if (password.Length < 8)
+            {
+                Console.WriteLine("Пароль занадто короткий. Спробуйте ще раз.");
+            }
+            else
+            {
+                return password.ToString(); // Пароль валідний, повертаємо результат
+            }
         }
-
-        return password.ToString();
     }
 
     // Метод для доповнення даних (PKCS7)
